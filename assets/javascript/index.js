@@ -73,7 +73,7 @@ $(document).ready(async () => {
     }
 
     // This function inserts joke to container
-    async function insertJoke(joke, appendTo) {
+    function insertJoke(joke, appendTo) {
         let elementCategoryClass = joke.categories[0] === undefined ?' hidden' :'';
         let heartType = 'assets/images/' +
             (FavoriteJokes.isJokeExists(joke.id) ? 'heart-full.svg' :'heart.svg');
@@ -156,10 +156,15 @@ $(document).ready(async () => {
         if(jokes.total === undefined) {
             insertJoke(jokes, '.jokes-container');
         } else {
+            let favoriteJokes = FavoriteJokes.getFavoriteJokes();
             let i = 0;
+
+            jokes.result.unshift(...favoriteJokes);
+
             for (const joke of jokes.result) {
                 i++;
-                if(i <= 100) insertJoke(joke, '.jokes-container');
+                if(i <= 100 + favoriteJokes.length) insertJoke(joke, '.jokes-container');
+                else return;
             }
         }
     });
