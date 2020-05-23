@@ -196,6 +196,7 @@ $(document).ready(async () => {
     $('.show-favorite-jokes').click((e) => {
         let modal = $('.modal-window-background');
         let button = $('.show-favorite-jokes');
+        let sideBlock = $('.favorite-jokes');
 
         if(button.hasClass('show-jokes-active')) button.removeClass('show-jokes-active');
         else button.addClass('show-jokes-active');
@@ -203,11 +204,16 @@ $(document).ready(async () => {
         if(modal.hasClass('visible')) modal.removeClass('visible');
         else modal.addClass('visible');
 
-        let sideBlock = $('.favorite-jokes');
-        sideBlock.slideToggle("500");
-        if(sideBlock.hasClass('open-side-menu')) sideBlock.removeClass('open-side-menu');
-        else sideBlock.addClass('open-side-menu');
-    })
+        if(sideBlock.hasClass('open-side-menu')) {
+            sideBlock.slideToggle("500", () =>{
+                sideBlock.removeClass('open-side-menu');
+            });
+        }
+        else {
+            sideBlock.slideToggle("500");
+            sideBlock.addClass('open-side-menu');
+        }
+    });
 
     // Adds or removes joke to/from favorites
     $(document).on('click', '.element-heart', async (e) => {
