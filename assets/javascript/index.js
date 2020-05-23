@@ -159,6 +159,11 @@ $(document).ready(async () => {
             let favoriteJokes = FavoriteJokes.getFavoriteJokes();
             let i = 0;
 
+            if(jokes.total == 0) {
+                showMessageInContainer('No jokes matching the search bar', '.jokes-container');
+                return;
+            }
+
             jokes.result.unshift(...favoriteJokes);
 
             for (const joke of jokes.result) {
@@ -168,6 +173,22 @@ $(document).ready(async () => {
             }
         }
     });
+
+
+    // Displays a message in a container
+    function showMessageInContainer(message, appendTo) {
+        $('<div>', {
+            class: 'w-100 h-100 d-flex justify-content-center align-items-center no-items',
+            append: $('<h4>', {
+                style: 'text-align: center;',
+                text: message
+            })
+        }).appendTo(appendTo);
+    }
+
+    // function removeMessageFromContainer(removeFrom) {
+    //     $(removeFrom).remove('.no-items');
+    // }
 
     // Show dropdown item under selected radio button
     $('input[type=radio]').click((e) => {
@@ -229,7 +250,7 @@ $(document).ready(async () => {
         if(heart.attr('src').includes('heart.svg')) {
             heart.attr({src: 'assets/images/heart-full.svg'});
             FavoriteJokes.addJokeToFavorite(joke.result[0]);
-            insertJoke(joke.result[0], '.favorite-jokes-container');
+            showFavoriteJokes();
         } else {
             heart.attr({src: 'assets/images/heart.svg'});
             FavoriteJokes.removeJokeFromFavorite(joke.result[0].id);
@@ -237,10 +258,16 @@ $(document).ready(async () => {
         }
     });
 
-    // Fills favorite jokes
+    // Fills favorite jokes container
     function showFavoriteJokes() {
         let jokes = FavoriteJokes.getFavoriteJokes();
         $('.favorite-jokes-container').empty();
+
+        if(jokes.length == 0) {
+            showMessageInContainer('No favourite jokes', '.favorite-jokes-container');
+            return;
+        }
+
         for (const joke of jokes) {
             insertJoke(joke, '.favorite-jokes-container');
         }

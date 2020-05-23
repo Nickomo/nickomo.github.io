@@ -326,6 +326,10 @@ input[type=radio] {
   vertical-align: middle;
 }
 
+input[type=radio] + label {
+  cursor: pointer;
+}
+
 input[type=radio] + label:before {
   display: inline-block;
   content: '\26AB';
