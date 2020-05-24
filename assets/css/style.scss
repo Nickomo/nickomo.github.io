@@ -31,7 +31,6 @@ header {
     }
 
     .header-title {
-        // z-index: 1;
         padding-left: 140px;
         font-weight: bold;
         width: 66.6%;
@@ -40,13 +39,13 @@ header {
         z-index: 4;
         padding-left: 40px;
         display: flex;
-        // align-items: center;
         width: 33.3%;
         min-width: 480px;
         color: #ABABAB;
     }
     .show-favorite-jokes {
         display: none;
+        cursor: pointer;
         position: relative;
         height: 28px;
         width: 28px;
@@ -103,10 +102,8 @@ main {
 }
 
 .main-content {
-    // box-sizing: border-box;
     background-color: #FFFFFF;
     width: 66.666%;
-    // flex: 2 140px;
     margin-top: 70px;
     padding: 76px 140px 0px 140px;
     overflow-y: auto;
@@ -114,7 +111,6 @@ main {
 }
 
 .favorite-jokes {
-    // box-sizing: border-box;
     background-color: #F8F8F8;
     width: 33.333%;
     z-index: 3;
@@ -127,7 +123,6 @@ main {
     padding: 0 40px;
     height: calc(100% - 88px);
     overflow-y: auto;
-    // background-color: #F8F8F8;
 }
 
 .get-jokes-form {
@@ -341,7 +336,11 @@ input[type=radio] {
 //End styles for radio
 //==================================================
 
-// and (min-width: 420px)
+
+//==================================================
+// Media
+//==================================================
+
 @media(max-width: 1140px) {
     .main-content {
         padding: 76px 40px 0px 40px;
@@ -364,6 +363,7 @@ input[type=radio] {
             width: auto;
             margin-right: 40px;
             min-width: 0;
+            cursor: pointer;
         }
 
         .show-favorite-jokes {

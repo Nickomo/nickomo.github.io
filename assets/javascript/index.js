@@ -157,38 +157,52 @@ $(document).ready(async () => {
             insertJoke(jokes, '.jokes-container');
         } else {
             let favoriteJokes = FavoriteJokes.getFavoriteJokes();
-            let i = 0;
+            let index = 0;
 
-            if(jokes.total == 0) {
-                showMessageInContainer('No jokes matching the search bar', '.jokes-container');
-                return;
+            for (const joke of favoriteJokes) {
+                let foundIndex = jokes.result.findIndex((item) => {
+                    if(item.id == joke.id) return true;
+                    return false;
+                });
+
+                if(foundIndex != -1) {
+                    jokes.result.splice(foundIndex, 1);
+                }
             }
 
             jokes.result.unshift(...favoriteJokes);
 
-            for (const joke of jokes.result) {
-                i++;
-                if(i <= 100 + favoriteJokes.length) insertJoke(joke, '.jokes-container');
-                else return;
+            if(jokes.result.length == 0) {
+                showMessageInContainer('No jokes matching the search bar', '.jokes-container');
+                return;
             }
+
+            function fill() {
+                do insertJoke(jokes.result[index++], '.jokes-container');
+                while(index % 20 != 0 && index < jokes.result.length);
+            }
+            fill();
+
+            $('.main-content').off('scroll');
+            $('.main-content').on('scroll', (e) => {
+                let target = e.target;
+
+                if(target.scrollTop + target.offsetHeight >= target.scrollHeight && index < jokes.result.length)
+                    fill();
+            });
         }
     });
-
 
     // Displays a message in a container
     function showMessageInContainer(message, appendTo) {
         $('<div>', {
-            class: 'w-100 h-100 d-flex justify-content-center align-items-center no-items',
+            class: 'w-100 h-100 d-flex justify-content-center align-items-center',
             append: $('<h4>', {
                 style: 'text-align: center;',
                 text: message
             })
         }).appendTo(appendTo);
     }
-
-    // function removeMessageFromContainer(removeFrom) {
-    //     $(removeFrom).remove('.no-items');
-    // }
 
     // Show dropdown item under selected radio button
     $('input[type=radio]').click((e) => {
@@ -219,7 +233,9 @@ $(document).ready(async () => {
 
 
     // Shows side block
-    $('.show-favorite-jokes').click((e) => {
+    $('.header-favorite').click((e) => {
+        if(window.innerWidth > 1140) return;
+
         let modal = $('.modal-window-background');
         let button = $('.show-favorite-jokes');
         let sideBlock = $('.favorite-jokes');
@@ -261,6 +277,8 @@ $(document).ready(async () => {
     // Fills favorite jokes container
     function showFavoriteJokes() {
         let jokes = FavoriteJokes.getFavoriteJokes();
+        let i = 0;
+
         $('.favorite-jokes-container').empty();
 
         if(jokes.length == 0) {
@@ -268,9 +286,13 @@ $(document).ready(async () => {
             return;
         }
 
-        for (const joke of jokes) {
-            insertJoke(joke, '.favorite-jokes-container');
+        function fill() {
+            do insertJoke(jokes[i++], '.favorite-jokes-container');
+            while(i % 10 != 0 && i < jokes.length);
+
+            if(i < jokes.length) setTimeout(fill);
         }
+        fill();
     }
     showFavoriteJokes();
 

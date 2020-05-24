@@ -52,6 +52,7 @@ header .header-favorite {
 
 header .show-favorite-jokes {
   display: none;
+  cursor: pointer;
   position: relative;
   height: 28px;
   width: 28px;
@@ -376,6 +377,7 @@ input[type=radio]:checked + label:before {
     width: auto;
     margin-right: 40px;
     min-width: 0;
+    cursor: pointer;
   }
   header .show-favorite-jokes {
     display: block;
