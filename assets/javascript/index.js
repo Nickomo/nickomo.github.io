@@ -22,7 +22,6 @@ class JokesAPI {
 
     // Returns a random joke from a given category.
     static async getJokeFromCategory(category) {
-        console.log(category);
         return this.getJokes('random', {category});
     }
 
@@ -45,8 +44,7 @@ class FavoriteJokes {
     }
     // Returns true if the joke is in favorites, otherwise false
     static isJokeExists(id) {
-        if(localStorage.getItem(id) !== null)
-            return true;
+        if(localStorage.getItem(id) !== null) return true;
         return false;
     }
 
@@ -61,19 +59,22 @@ class FavoriteJokes {
     }
 }
 
-
-$(document).ready(async () => {
+class ContentManager
+{
     // Fills categories list
-    let result = await JokesAPI.getJokesCategories();
-    for (const item of result) {
-        $('<div>', {
-            class: 'category-element',
-            text: item
-        }).appendTo('#dropdown-joke-categories');
+    static async fillCategoriesList() {
+        let categories = await JokesAPI.getJokesCategories();
+
+        for (const item of categories) {
+            $('<div>', {
+                class: 'category-element',
+                text: item
+            }).appendTo('#dropdown-joke-categories');
+        }
     }
 
     // This function inserts joke to container
-    function insertJoke(joke, appendTo) {
+    static insertJoke(joke, appendTo) {
         let elementCategoryClass = joke.categories[0] === undefined ?' hidden' :'';
         let heartType = 'assets/images/' +
             (FavoriteJokes.isJokeExists(joke.id) ? 'heart-full.svg' :'heart.svg');
@@ -135,12 +136,9 @@ $(document).ready(async () => {
         .appendTo(appendTo);
     }
 
-    // Fills jokes list with selected filter
-    $('#get-jokes-form').submit(async (e) => {
-        e.preventDefault();
-
-        let request = new FormData(e.target);
-        let jokes = await (() => {
+    // Inserts all found jokes into container
+    static async insertAllJokes(request) {
+        let response = await (() => {
             switch(request.get('search-type')) {
                 case 'random':
                     return JokesAPI.getRandomJoke();
@@ -153,33 +151,28 @@ $(document).ready(async () => {
 
         $('.jokes-container').empty();
 
-        if(jokes.total === undefined) {
-            insertJoke(jokes, '.jokes-container');
-        } else {
+        if(response.total === undefined) {
+            $('.main-content').off('scroll');
+            this.insertJoke(response, '.jokes-container');
+        }
+        else {
             let favoriteJokes = FavoriteJokes.getFavoriteJokes();
             let index = 0;
+            let jokes = Array.from(
+                new Map(response.result
+                    .push(...favoriteJokes)
+                    .map(x => [x.id, x])
+                ).values()
+            );
 
-            for (const joke of favoriteJokes) {
-                let foundIndex = jokes.result.findIndex((item) => {
-                    if(item.id == joke.id) return true;
-                    return false;
-                });
-
-                if(foundIndex != -1) {
-                    jokes.result.splice(foundIndex, 1);
-                }
-            }
-
-            jokes.result.unshift(...favoriteJokes);
-
-            if(jokes.result.length == 0) {
-                showMessageInContainer('No jokes matching the search bar', '.jokes-container');
+            if(jokes.length == 0) {
+                this.showMessageInContainer('No jokes matching the search bar', '.jokes-container');
                 return;
             }
 
             function fill() {
-                do insertJoke(jokes.result[index++], '.jokes-container');
-                while(index % 20 != 0 && index < jokes.result.length);
+                do ContentManager.insertJoke(jokes[index++], '.jokes-container');
+                while(index % 20 != 0 && index < jokes.length);
             }
             fill();
 
@@ -187,14 +180,35 @@ $(document).ready(async () => {
             $('.main-content').on('scroll', (e) => {
                 let target = e.target;
 
-                if(target.scrollTop + target.offsetHeight >= target.scrollHeight && index < jokes.result.length)
+                if(target.scrollTop + target.offsetHeight >= target.scrollHeight && index < jokes.length)
                     fill();
             });
         }
-    });
+    }
+
+    // Fills favorite jokes container
+    static showFavoriteJokes() {
+        let jokes = FavoriteJokes.getFavoriteJokes();
+        let i = 0;
+
+        $('.favorite-jokes-container').empty();
+
+        if(jokes.length == 0) {
+            this.showMessageInContainer('No favourite jokes', '.favorite-jokes-container');
+            return;
+        }
+
+        function fill() {
+            do ContentManager.insertJoke(jokes[i++], '.favorite-jokes-container');
+            while(i % 10 != 0 && i < jokes.length);
+
+            if(i < jokes.length) setTimeout(fill);
+        }
+        fill();
+    }
 
     // Displays a message in a container
-    function showMessageInContainer(message, appendTo) {
+    static showMessageInContainer(message, appendTo) {
         $('<div>', {
             class: 'w-100 h-100 d-flex justify-content-center align-items-center',
             append: $('<h4>', {
@@ -203,6 +217,20 @@ $(document).ready(async () => {
             })
         }).appendTo(appendTo);
     }
+}
+
+
+$(document).ready(async () => {
+    await ContentManager.fillCategoriesList();
+
+    // Fills jokes list with selected filter
+    $('#get-jokes-form').submit(async (e) => {
+        e.preventDefault();
+        let request = new FormData(e.target);
+        ContentManager.insertAllJokes(request);
+    });
+
+    ContentManager.showFavoriteJokes();
 
     // Show dropdown item under selected radio button
     $('input[type=radio]').click((e) => {
@@ -225,7 +253,7 @@ $(document).ready(async () => {
 
     $('.category-element').click((e) => {
         if(prevSelected != null) {
-            prevSelected.removeClass('category-element-selected')
+            prevSelected.removeClass('category-element-selected');
         }
         prevSelected = $(e.target);
         prevSelected.addClass('category-element-selected');
@@ -266,35 +294,13 @@ $(document).ready(async () => {
         if(heart.attr('src').includes('heart.svg')) {
             heart.attr({src: 'assets/images/heart-full.svg'});
             FavoriteJokes.addJokeToFavorite(joke.result[0]);
-            showFavoriteJokes();
+            ContentManager.showFavoriteJokes();
         } else {
             heart.attr({src: 'assets/images/heart.svg'});
             FavoriteJokes.removeJokeFromFavorite(joke.result[0].id);
-            showFavoriteJokes();
+            ContentManager.showFavoriteJokes();
         }
     });
-
-    // Fills favorite jokes container
-    function showFavoriteJokes() {
-        let jokes = FavoriteJokes.getFavoriteJokes();
-        let i = 0;
-
-        $('.favorite-jokes-container').empty();
-
-        if(jokes.length == 0) {
-            showMessageInContainer('No favourite jokes', '.favorite-jokes-container');
-            return;
-        }
-
-        function fill() {
-            do insertJoke(jokes[i++], '.favorite-jokes-container');
-            while(i % 10 != 0 && i < jokes.length);
-
-            if(i < jokes.length) setTimeout(fill);
-        }
-        fill();
-    }
-    showFavoriteJokes();
 
     // Changes styles when page has large width
     window.onresize = (e) => {
