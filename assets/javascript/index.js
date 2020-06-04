@@ -160,7 +160,7 @@ class ContentManager
             let index = 0;
             let jokes = Array.from(
                 new Map(response.result
-                    .push(...favoriteJokes)
+                    .concat(...favoriteJokes)
                     .map(x => [x.id, x])
                 ).values()
             );
