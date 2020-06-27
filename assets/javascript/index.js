@@ -159,8 +159,8 @@ class ContentManager
             let favoriteJokes = FavoriteJokes.getFavoriteJokes();
             let index = 0;
             let jokes = Array.from(
-                new Map(response.result
-                    .concat(...favoriteJokes)
+                new Map(favoriteJokes
+                    .concat(response.result)
                     .map(x => [x.id, x])
                 ).values()
             );
